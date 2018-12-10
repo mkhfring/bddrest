@@ -1,9 +1,15 @@
+from os import path
 import base64
 import cgi
 import hashlib
 import io
 
 from bddrest import Given, response, status
+
+
+HERE = path.dirname(__file__)
+STUFF = path.join(HERE, 'stuff')
+SAMPLEFILE = path.join(STUFF, 'sample-file.txt')
 
 
 def wsgi_application(environ, start_response):
@@ -29,7 +35,11 @@ BINARY_CONTENT = \
 BINARY_CONTENT_HASH = hashlib.md5(BINARY_CONTENT).digest()
 
 
-def test_upload_binary_file():
+with open(SAMPLEFILE, 'rb') as f:
+    SAMPLEFILE_CONTENT_HASH = hashlib.md5(f.read()).digest()
+
+
+def test_upload_binary_file_bytesio():
 
     call = dict(
         title='Uploading an image',
@@ -40,4 +50,16 @@ def test_upload_binary_file():
     with Given(wsgi_application, **call):
         assert status == '200 OK'
         assert base64.decodebytes(response.body) == BINARY_CONTENT_HASH
+
+def test_upload_binary_file_fileio():
+
+    call = dict(
+        title='Uploading an image using fileio',
+        verb='POST',
+        multipart=dict(a=io.FileIO(SAMPLEFILE))
+    )
+
+    with Given(wsgi_application, **call):
+        assert status == '200 OK'
+        assert base64.decodebytes(response.body) == SAMPLEFILE_CONTENT_HASH
 
