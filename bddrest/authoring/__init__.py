@@ -6,6 +6,7 @@ from .story import Story
 from .given import Given
 from .manipulation import Manipulator, Append, Remove, Update, \
     CompositeManipulatorInitializer
+from .fileinfo import FileInfo
 
 
 story = ObjectProxy(Given.get_current)

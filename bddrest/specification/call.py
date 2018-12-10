@@ -23,6 +23,15 @@ class Call(metaclass=ABCMeta):
             response = Response(**response)
         self.response = response
 
+    def prepare_for_dump(self, d):
+        result = {}
+        for key, value in d.items():
+            if hasattr(value, 'to_dict'):
+                result[key] = value.to_dict()
+            else:
+                result[key] = value
+        return result
+
     def to_dict(self):
         result = dict(
             title=self.title,
@@ -39,7 +48,7 @@ class Call(metaclass=ABCMeta):
         elif self.json is not None:
             result['json'] = self.json
         elif self.multipart is not None:
-            result['multipart'] = self.multipart
+            result['multipart'] = self.prepare_for_dump(self.multipart)
 
         if self.headers is not None:
             result['headers'] = [': '.join(h) for h in self.headers]
